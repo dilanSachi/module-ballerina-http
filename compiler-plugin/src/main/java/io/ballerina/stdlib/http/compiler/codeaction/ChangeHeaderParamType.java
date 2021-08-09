@@ -44,7 +44,8 @@ public abstract class ChangeHeaderParamType implements CodeAction {
         }
 
         DiagnosticProperty<?> diagnosticProperty = properties.get(0);
-        if (!(diagnosticProperty instanceof BSymbolicProperty) || !(diagnosticProperty.value() instanceof ParameterSymbol)) {
+        if (!(diagnosticProperty instanceof BSymbolicProperty) || 
+                !(diagnosticProperty.value() instanceof ParameterSymbol)) {
             return Optional.empty();
         }
 
@@ -55,7 +56,8 @@ public abstract class ChangeHeaderParamType implements CodeAction {
             return Optional.empty();
         }
 
-        CodeActionArgument locationArg = CodeActionArgument.from(CodeActionUtil.NODE_LOCATION_KEY, nonTerminalNode.get().location().lineRange());
+        CodeActionArgument locationArg = CodeActionArgument.from(CodeActionUtil.NODE_LOCATION_KEY, 
+                nonTerminalNode.get().location().lineRange());
         return Optional.of(CodeActionInfo.from(String.format("Change header param to '%s'", headerParamType()),
                 List.of(locationArg)));
     }
@@ -96,10 +98,6 @@ public abstract class ChangeHeaderParamType implements CodeAction {
         TextDocumentChange change = TextDocumentChange.from(textEdits.toArray(new TextEdit[0]));
         return Collections.singletonList(new DocumentEdit(context.fileUri(), SyntaxTree.from(syntaxTree, change)));
     }
-
-    private void checkInvalidHeaderParameterNode(NonTerminalNode node) {
-
-    }
-
+    
     protected abstract String headerParamType();
 }
