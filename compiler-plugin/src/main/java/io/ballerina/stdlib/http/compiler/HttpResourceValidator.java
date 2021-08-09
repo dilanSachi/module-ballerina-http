@@ -389,7 +389,7 @@ class HttpResourceValidator {
                             if (arrElementKind == TypeDescKind.STRING) {
                                 continue;
                             } else {
-                                reportInvalidHeaderParameterType(ctx, paramLocation, paramName);
+                                reportInvalidHeaderParameterType(ctx, paramLocation, paramName, param);
                             }
                         } else if (kind == TypeDescKind.UNION) {
                             List<TypeSymbol> symbolList = ((UnionTypeSymbol) typeSymbol).memberTypeDescriptors();
