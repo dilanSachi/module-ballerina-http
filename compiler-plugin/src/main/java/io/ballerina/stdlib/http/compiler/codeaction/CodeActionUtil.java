@@ -4,6 +4,7 @@ import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
+import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.LineRange;
 import io.ballerina.tools.text.TextDocument;
 import io.ballerina.tools.text.TextRange;
@@ -14,6 +15,8 @@ import io.ballerina.tools.text.TextRange;
 public class CodeActionUtil {
 
     public static final String NODE_LOCATION_KEY = "node.location";
+    public static final String LINE_RANGE_KEY = "line.range";
+    public static final String TEXT_RANGE_KEY = "line.range";
 
     private CodeActionUtil() {
     }
@@ -41,4 +44,17 @@ public class CodeActionUtil {
         return ((ModulePartNode) syntaxTree.rootNode()).findNode(TextRange.from(start, end - start), true);
     }
 
+    public static boolean isWithinRange(LineRange lineRange, LinePosition pos) {
+        int sLine = lineRange.startLine().line();
+        int sCol = lineRange.startLine().offset();
+        int eLine = lineRange.endLine().line();
+        int eCol = lineRange.endLine().offset();
+
+        return ((sLine == eLine && pos.line() == sLine) &&
+                (pos.offset() >= sCol && pos.offset() <= eCol)
+        ) || ((sLine != eLine) && (pos.line() > sLine && pos.line() < eLine ||
+                pos.line() == eLine && pos.offset() <= eCol ||
+                pos.line() == sLine && pos.offset() >= sCol
+        ));
+    }
 }

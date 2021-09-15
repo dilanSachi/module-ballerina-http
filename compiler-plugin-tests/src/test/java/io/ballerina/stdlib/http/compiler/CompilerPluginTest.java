@@ -30,9 +30,11 @@ import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
 import io.ballerina.projects.plugins.codeaction.CodeActionContextImpl;
 import io.ballerina.projects.plugins.codeaction.CodeActionInfo;
+import io.ballerina.stdlib.http.compiler.codeaction.CodeActionUtil;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.text.LinePosition;
+import io.ballerina.tools.text.LineRange;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -379,7 +381,7 @@ public class CompilerPluginTest {
 
     @Test
     public void testCodeActions() {
-        Path projectRoot = RESOURCE_DIRECTORY.resolve("sample_package_12");
+        Path projectRoot = RESOURCE_DIRECTORY.resolve("sample_codeaction_package_1");
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectRoot);
 
         Path filePath = projectRoot.resolve("service.bal");
@@ -391,12 +393,14 @@ public class CompilerPluginTest {
 
         Document document = currentPackage.getDefaultModule().document(documentId);
 
+        LinePosition cursorPos = LinePosition.from(20, 65);
         List<CodeActionInfo> codeActions = compilation.diagnosticResult().diagnostics().stream()
-                .filter(diagnostic -> project.sourceRoot().equals(filePath))
+                .filter(diagnostic -> CodeActionUtil.isWithinRange(diagnostic.location().lineRange(), cursorPos) &&
+                        filePath.endsWith(diagnostic.location().lineRange().filePath()))
                 .flatMap(diagnostic -> {
                     CodeActionContextImpl context = CodeActionContextImpl.from(filePath.toUri().toString(),
                             filePath,
-                            LinePosition.from(24, 8),
+                            cursorPos,
                             document,
                             compilation.getSemanticModel(documentId.moduleId()),
                             diagnostic);

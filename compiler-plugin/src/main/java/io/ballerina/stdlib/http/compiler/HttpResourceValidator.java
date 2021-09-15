@@ -605,7 +605,7 @@ class HttpResourceValidator {
         if (isValidReturnTypeWithCaller(typeSymbol)) {
             return;
         }
-        updateDiagnostic(ctx, returnTypeLocation, returnTypeDescription, HttpDiagnosticCodes.HTTP_118);
+        updateDiagnostic(ctx, returnTypeLocation, returnTypeDescription, HttpDiagnosticCodes.HTTP_118));
     }
 
     private static boolean isHttpCaller(ParameterSymbol param) {
