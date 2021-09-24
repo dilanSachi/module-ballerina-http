@@ -1,7 +1,8 @@
 package io.ballerina.stdlib.http.compiler.codeaction;
 
-import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
+import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.ReturnTypeDescriptorNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.plugins.codeaction.CodeAction;
 import io.ballerina.projects.plugins.codeaction.CodeActionArgument;
@@ -10,13 +11,11 @@ import io.ballerina.projects.plugins.codeaction.CodeActionExecutionContext;
 import io.ballerina.projects.plugins.codeaction.CodeActionInfo;
 import io.ballerina.projects.plugins.codeaction.DocumentEdit;
 import io.ballerina.stdlib.http.compiler.HttpDiagnosticCodes;
-import io.ballerina.tools.diagnostics.DiagnosticProperty;
 import io.ballerina.tools.text.LineRange;
 import io.ballerina.tools.text.TextDocument;
 import io.ballerina.tools.text.TextDocumentChange;
 import io.ballerina.tools.text.TextEdit;
 import io.ballerina.tools.text.TextRange;
-import org.wso2.ballerinalang.compiler.diagnostic.properties.NonCatProperty;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,26 +31,14 @@ public class ChangeReturnTypeWithCaller implements CodeAction {
 
     @Override
     public Optional<CodeActionInfo> codeActionInfo(CodeActionContext context) {
-        List<DiagnosticProperty<?>> properties = context.diagnostic().properties();
-        if (properties.isEmpty()) {
+        NonTerminalNode node = CodeActionUtil.findNode(context.currentDocument().syntaxTree(),
+                context.diagnostic().location().lineRange());
+        if (node == null || node.parent().kind() != SyntaxKind.RETURN_TYPE_DESCRIPTOR) {
             return Optional.empty();
         }
 
-        DiagnosticProperty<?> diagnosticProperty = properties.get(0);
-        if (!(diagnosticProperty instanceof NonCatProperty) ||
-                !(diagnosticProperty.value() instanceof FunctionDefinitionNode)) {
-            return Optional.empty();
-        }
-
-        FunctionDefinitionNode functionDefinitionNode = (FunctionDefinitionNode) diagnosticProperty.value();
-        if (functionDefinitionNode.functionSignature().returnTypeDesc().isEmpty()) {
-            return Optional.empty();
-        }
-
-        ReturnTypeDescriptorNode returnTypeDescriptorNode =
-                functionDefinitionNode.functionSignature().returnTypeDesc().get();
         CodeActionArgument locationArg = CodeActionArgument.from(CodeActionUtil.NODE_LOCATION_KEY,
-                returnTypeDescriptorNode.type().lineRange());
+                node.location().lineRange());
         return Optional.of(CodeActionInfo.from("Change return type to 'error?'", List.of(locationArg)));
     }
 

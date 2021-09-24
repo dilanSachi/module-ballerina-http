@@ -18,30 +18,20 @@
 
 package io.ballerina.stdlib.http.compiler;
 
-import io.ballerina.projects.CodeActionManager;
 import io.ballerina.projects.DiagnosticResult;
-import io.ballerina.projects.Document;
-import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
-import io.ballerina.projects.plugins.codeaction.CodeActionContextImpl;
-import io.ballerina.projects.plugins.codeaction.CodeActionInfo;
-import io.ballerina.stdlib.http.compiler.codeaction.CodeActionUtil;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
-import io.ballerina.tools.text.LinePosition;
-import io.ballerina.tools.text.LineRange;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * This class includes tests for Ballerina Http compiler plugin.
@@ -377,37 +367,5 @@ public class CompilerPluginTest {
         assertErrorPosition(diagnosticResult, 13, "(79:61,79:64)");
         assertErrorPosition(diagnosticResult, 14, "(79:79,79:82)");
         assertErrorPosition(diagnosticResult, 15, "(83:77,83:93)");
-    }
-
-    @Test
-    public void testCodeActions() {
-        Path projectRoot = RESOURCE_DIRECTORY.resolve("sample_codeaction_package_1");
-        BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectRoot);
-
-        Path filePath = projectRoot.resolve("service.bal");
-        DocumentId documentId = project.documentId(filePath);
-
-        Package currentPackage = project.currentPackage();
-        PackageCompilation compilation = currentPackage.getCompilation();
-        CodeActionManager codeActionManager = compilation.getCodeActionManager();
-
-        Document document = currentPackage.getDefaultModule().document(documentId);
-
-        LinePosition cursorPos = LinePosition.from(20, 65);
-        List<CodeActionInfo> codeActions = compilation.diagnosticResult().diagnostics().stream()
-                .filter(diagnostic -> CodeActionUtil.isWithinRange(diagnostic.location().lineRange(), cursorPos) &&
-                        filePath.endsWith(diagnostic.location().lineRange().filePath()))
-                .flatMap(diagnostic -> {
-                    CodeActionContextImpl context = CodeActionContextImpl.from(filePath.toUri().toString(),
-                            filePath,
-                            cursorPos,
-                            document,
-                            compilation.getSemanticModel(documentId.moduleId()),
-                            diagnostic);
-                    return codeActionManager.codeActions(context).stream();
-                })
-                .collect(Collectors.toList());
-        
-        Assert.assertTrue(codeActions.size() > 0);
     }
 }

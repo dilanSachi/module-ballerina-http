@@ -87,14 +87,9 @@ class HttpResourceValidator {
                                                              FunctionDefinitionNode member) {
         Optional<MetadataNode> metadataNodeOptional = member.metadata();
         if (metadataNodeOptional.isEmpty()) {
-            reportNoResourceAnnotationHint(ctx, member);
             return;
         } else {
             NodeList<AnnotationNode> annotations = metadataNodeOptional.get().annotations();
-            if (annotations.isEmpty()) {
-                reportNoResourceAnnotationHint(ctx, member);
-            }
-            
             for (AnnotationNode annotation : annotations) {
                 Node annotReference = annotation.annotReference();
                 String annotName = annotReference.toString();
@@ -605,7 +600,7 @@ class HttpResourceValidator {
         if (isValidReturnTypeWithCaller(typeSymbol)) {
             return;
         }
-        updateDiagnostic(ctx, returnTypeLocation, returnTypeDescription, HttpDiagnosticCodes.HTTP_118));
+        updateDiagnostic(ctx, returnTypeLocation, returnTypeDescription, HttpDiagnosticCodes.HTTP_118);
     }
 
     private static boolean isHttpCaller(ParameterSymbol param) {
@@ -672,9 +667,9 @@ class HttpResourceValidator {
         updateDiagnostic(ctx, location, paramName, HttpDiagnosticCodes.HTTP_108);
     }
 
-    private static void reportInvalidHeaderParameterType(SyntaxNodeAnalysisContext ctx, FunctionDefinitionNode node,
+    private static void reportInvalidHeaderParameterType(SyntaxNodeAnalysisContext ctx, Location location, 
                                                          String paramName, ParameterSymbol parameterSymbol) {
-        updateDiagnostic(ctx, node, paramName, HttpDiagnosticCodes.HTTP_109,
+        updateDiagnostic(ctx, location, paramName, HttpDiagnosticCodes.HTTP_109,
                 List.of(new BSymbolicProperty(parameterSymbol)));
     }
 
@@ -709,7 +704,7 @@ class HttpResourceValidator {
         ctx.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, location));
     }
 
-    private static void updateDiagnostic(SyntaxNodeAnalysisContext ctx, Node node, String argName,
+    private static void updateDiagnostic(SyntaxNodeAnalysisContext ctx, Location location, String argName,
                                          HttpDiagnosticCodes httpDiagnosticCodes,
                                          List<DiagnosticProperty<?>> diagnosticProperties) {
         DiagnosticInfo diagnosticInfo;
@@ -718,7 +713,7 @@ class HttpResourceValidator {
         } else {
             diagnosticInfo = getDiagnosticInfo(httpDiagnosticCodes, argName);
         }
-        ctx.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, node.location(), diagnosticProperties));
+        ctx.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, location, diagnosticProperties));
     }
 
     private static DiagnosticInfo getDiagnosticInfo(HttpDiagnosticCodes diagnostic, Object... args) {
