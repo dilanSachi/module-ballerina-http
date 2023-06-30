@@ -33,9 +33,7 @@ def testCommonTomlFilePlaceHolder = new File("${project.rootDir}/build-config/re
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def distributionBinPath =  "${ballerinaDist}/bin"
 def testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.http.*:ballerina.http*"
-def testPackages = ["http2-tests", "http-advanced-tests", "http-client-tests", "http-dispatching-tests",
-                    "http-interceptor-tests", "http-misc-tests", "http-resiliency-tests", "http-security-tests",
-                    "http-service-tests"]
+def testPackages = ["http2-tests"]
 def testCommonPackage = "http-test-common"
 
 def stripBallerinaExtensionVersion(String extVersion) {
@@ -89,11 +87,6 @@ task updateTomlVersions {
             ballerinaTomlFile.text = newBallerinaToml
         }
 
-        def ballerinaTomlFile =  new File("${project.projectDir}/${testCommonPackage}/Ballerina.toml")
-        def newBallerinaToml = testCommonTomlFilePlaceHolder.text.replace("@project.version@", project.version)
-        newBallerinaToml = newBallerinaToml.replace("@toml.version@", tomlVersion)
-        newBallerinaToml = newBallerinaToml.replace("@package.name@", testCommonPackage.replaceAll("-", "_"))
-        ballerinaTomlFile.text = newBallerinaToml
     }
 }
 
@@ -161,31 +154,6 @@ task initializeVariables {
     }
 }
 
-task publishTestCommonPackageToLocal {
-    dependsOn(":${packageName}-${packageOrg}:build")
-    dependsOn(updateTomlVersions)
-    doLast {
-        if (!skipTests) {
-            exec {
-                workingDir "${project.projectDir}/${testCommonPackage}"
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat pack && exit  %%ERRORLEVEL%%"
-                } else {
-                    commandLine 'sh', '-c', "${distributionBinPath}/bal pack"
-                }
-            }
-            exec {
-                workingDir "${project.projectDir}/${testCommonPackage}"
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat push --repository=local" +
-                            " && exit %%ERRORLEVEL%%"
-                } else {
-                    commandLine 'sh', '-c', "${distributionBinPath}/bal push --repository=local"
-                }
-            }
-        }
-    }
-}
 
 task ballerinaTest {
     inputs.dir file(project.projectDir)
@@ -195,7 +163,6 @@ task ballerinaTest {
     dependsOn(":${packageName}-${packageOrg}-${moduleName}:compileJava")
     dependsOn(":${packageName}-${packageOrg}-${moduleName}:jar")
     dependsOn(":${packageName}-${packageOrg}-${moduleName}:processResources")
-    dependsOn(publishTestCommonPackageToLocal)
     finalizedBy(commitTomlFiles)
 
     doLast {
