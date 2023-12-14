@@ -199,8 +199,10 @@ public class BlockingEntityCollector implements EntityCollector {
             state = EntityBodyState.EXPECTING;
         } catch (InterruptedException e) {
             LOG.error("Error while getting content from queue", e);
+            System.out.println(e.getMessage());
         } catch (Exception e) {
             LOG.error("Error while waiting and releasing the content", e);
+            System.out.println(e.getMessage());
         } finally {
             readWriteLock.unlock();
         }

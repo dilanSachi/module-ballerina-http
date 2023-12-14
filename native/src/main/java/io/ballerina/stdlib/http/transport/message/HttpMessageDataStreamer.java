@@ -192,9 +192,9 @@ public class HttpMessageDataStreamer {
     }
 
     private InputStream createInputStreamIfNull() {
-        if (byteBufferInputStream == null) {
+//        if (byteBufferInputStream == null) {
             byteBufferInputStream = new HttpMessageDataStreamer.ByteBufferInputStream();
-        }
+//        }
         return byteBufferInputStream;
     }
 
